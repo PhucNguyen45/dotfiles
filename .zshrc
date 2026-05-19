@@ -1,91 +1,107 @@
-# ===== Thiết lập cơ bản =====
+# ===================================================
+#  .zshrc - Zsh configuration for WSL Ubuntu 26.04
+#  Tự cấu hình thủ công + Zinit (Turbo) quản lý plugin + Powerlevel10k Instant Prompt
+# ===================================================
+
+# ----- 0. Instant Prompt (Powerlevel10k) – phải đặt đầu file -----
+# Cho phép hiển thị prompt ngay lập tức, plugin tải trong nền
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ----- 1. Thiết lập cơ bản (History, Options, Env) -----
 HISTFILE=~/.zsh_history
 HISTSIZE=20000
 SAVEHIST=20000
-HIST_STAMPS="yyyy-mm-dd"
 
-setopt EXTENDED_HISTORY
-setopt SHARE_HISTORY          # Chia sẻ lịch sử giữa các phiên
-setopt INC_APPEND_HISTORY     # Ghi lịch sử ngay lập tức
-setopt HIST_IGNORE_DUPS       # Không lưu lệnh trùng liên tiếp
-setopt HIST_IGNORE_SPACE      # Không lưu lệnh bắt đầu bằng dấu cách
-setopt HIST_IGNORE_ALL_DUPS   # Xóa lệnh cũ trùng khi có lệnh mới
+setopt EXTENDED_HISTORY          # Lưu timestamp cho mỗi lệnh
+setopt APPEND_HISTORY            # Luôn thêm vào file lịch sử (không ghi đè)
+setopt INC_APPEND_HISTORY        # Ghi lịch sử ngay lập tức sau mỗi lệnh
+setopt SHARE_HISTORY             # Chia sẻ lịch sử giữa các phiên
+setopt HIST_IGNORE_DUPS          # Không lưu lệnh trùng liên tiếp
+setopt HIST_IGNORE_SPACE         # Bỏ qua lệnh bắt đầu bằng dấu cách
+setopt HIST_IGNORE_ALL_DUPS      # Xóa lệnh cũ trùng nếu có lệnh mới
 
-# Ngăn thông báo lỗi dbus trên WSL
 export NO_AT_BRIDGE=1
 export XDG_SESSION_TYPE=wayland
 
-# Tự động hoàn thành (completion)
-# Cho phép cache để load nhanh hơn nhiều lần sau
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.zsh/cache
-# Giao diện menu completion
-zstyle ':completion:*' menu select
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-# Tìm kiếm "mờ": gõ chữ thường khớp cả chữ hoa
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
-# zsh-completions
-fpath=(~/.zsh/plugins/zsh-completions/src $fpath)
-# Khởi tạo completion engine
-autoload -Uz compinit
-compinit -d ~/.zsh/compdump
+# ----- 2. Khởi tạo Zinit (Plugin Manager) -----
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
+        print -P "%F{33} %F{34}Installation successful.%f%b" || \
+        print -P "%F{160} The clone has failed.%f%b"
+fi
 
-# ===== Plugin =====
-# Gợi ý lệnh (suggestions)
-source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-# Gợi ý dựa trên cả history và completion
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load các annex quan trọng (bắt buộc cho một số tính năng mở rộng)
+zinit light-mode for \
+    zdharma-continuum/zinit-annex-as-monitor \
+    zdharma-continuum/zinit-annex-bin-gem-node \
+    zdharma-continuum/zinit-annex-patch-dl \
+    zdharma-continuum/zinit-annex-rust
+
+# ----- 3. Plugin via Zinit (Turbo mode) -----
+# Autosuggestions (gợi ý lệnh)
+zinit light zsh-users/zsh-autosuggestions
+
+# Syntax highlighting (tô màu cú pháp)
+zinit ice wait lucid atload'ZINIT[COMPINIT_OPTS]=-C; zpcompinit'
+zinit light zsh-users/zsh-syntax-highlighting
+
+# Autopair (tự động đóng ngoặc, nháy)
+zinit ice wait lucid
+zinit light hlissner/zsh-autopair
+
+# zsh-completions (completion mở rộng)
+zinit ice wait lucid atload'zicompinit; zicdreplay'
+zinit load zchee/zsh-completions
+
+# mise (quản lý phiên bản đa ngôn ngữ)
+zinit ice as"command" from"gh-r" extract'!' mv"mise* -> mise" pick"mise" atload'eval "$(mise activate zsh)"'
+zinit light jdx/mise
+
+# ----- 4. Cấu hình riêng cho plugin -----
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-# Phím Ctrl+Space để chấp nhận gợi ý ngay lập tức
 bindkey '^ ' autosuggest-accept
 
-# ===== Giao diện Prompt =====
+# ----- 5. Giao diện Prompt (Powerlevel10k) -----
 source ~/.zsh/themes/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Để cấu hình giao diện prompt, chạy lệnh sau khi khởi động lại shell:
-# p10k configure
+# ----- 6. Tự động hoàn thành (Completion) -----
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+autoload -Uz compinit
+compinit -d ~/.zsh/compdump
 
-# SSH Agent với socket cố định, tránh trùng lặp
-export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
-if ! ssh-add -l > /dev/null 2>&1; then
-    # Khởi động agent nếu chưa có
-    rm -f "$SSH_AUTH_SOCK"
-    ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
-    ssh-add -q ~/.ssh/id_ed25519 2>/dev/null
-fi
-
-# ===== Modern CLI Tools (Aliases & Integrations) =====
-# Thay thế các lệnh cổ điển bằng phiên bản Rust siêu tốc
-
-# aliases di chuyển nhanh hơn
+# ----- 7. Aliases di chuyển nhanh -----
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias ~='cd ~'
 
-# ls → eza (hiển thị đẹp, icon, git status)
+# ----- 8. Modern CLI Tools -----
 alias ls='eza --icons=always --group-directories-first'
 alias ll='eza -l --icons=always --group-directories-first --git'
 alias la='eza -a --icons=always --group-directories-first'
 alias tree='eza --tree --icons=always'
-
-# cat → bat (tô màu cú pháp, tích hợp git)
 alias cat='batcat --paging=never'
-
-# grep → ripgrep (tìm kiếm nhanh, tôn trọng .gitignore)
 alias grep='rg --smart-case'
-
-# find → fd-find (cú pháp dễ dùng hơn)
 alias find='fdfind'
+alias y='yazi'
 
-# cd thông minh với zoxide (tự động ghi nhớ thư mục hay dùng)
 eval "$(zoxide init zsh)"
-
-# tldr (tealdeer) – hiển thị ví dụ ngắn gọn cho các lệnh
 export TEALDEER_CACHE_DIR="$HOME/.cache/tealdeer"
 
-# fzf – tìm kiếm mờ (Ctrl+R lịch sử, Ctrl+T file, Alt+C thư mục)
-# Giao diện fzf đẹp và có preview
+# ----- 9. fzf -----
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --preview "
   if [ -d {} ]; then
     eza --tree --icons=always --color=always {}
@@ -95,12 +111,16 @@ export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --preview "
 source /usr/share/doc/fzf/examples/key-bindings.zsh
 source /usr/share/doc/fzf/examples/completion.zsh
 
-# Fastfetch – thông tin hệ thống khi mở terminal
-# (nếu muốn tắt để tăng tốc startup, thêm dấu # trước dòng dưới)
+# ----- 10. Fastfetch (bỏ comment để bật) -----
 # fastfetch
 
-# ===== Tô màu cú pháp (phải nằm cuối cùng) =====
-source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# ----- 11. SSH Agent -----
+export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+if ! ssh-add -l > /dev/null 2>&1; then
+    rm -f "$SSH_AUTH_SOCK"
+    ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
+    ssh-add -q ~/.ssh/id_ed25519 2>/dev/null
+fi
 
-# Broot
+# ----- 12. Broot -----
 source /home/razer_admin/.config/broot/launcher/bash/br
