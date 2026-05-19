@@ -64,6 +64,7 @@ zinit load zchee/zsh-completions
 # mise (quản lý phiên bản đa ngôn ngữ)
 zinit ice as"command" from"gh-r" extract'!' mv"mise* -> mise" pick"mise" atload'eval "$(mise activate zsh)"'
 zinit light jdx/mise
+export MISE_TRUSTED_CONFIG_PATHS="$HOME/workspace"
 
 # ----- 4. Cấu hình riêng cho plugin -----
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
@@ -87,6 +88,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias ~='cd ~'
+alias //='cd /'
 
 # ----- 8. Modern CLI Tools -----
 alias ls='eza --icons=always --group-directories-first'
