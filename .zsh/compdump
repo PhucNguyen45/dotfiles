@@ -117,7 +117,6 @@ _comps=(
 'add-zsh-hook' '_add-zsh-hook'
 'admin' '_sccs'
 'ajv' '_ajv'
-'alacritty' '_alacritty'
 'ali' '_mh'
 'alias' '_alias'
 'amaya' '_webbrowser'
@@ -404,7 +403,7 @@ _comps=(
 'debuild' '_debuild'
 'declare' '_typeset'
 'defaults' '_defaults'
-'delta' '_sccs'
+'delta' '_delta'
 'dep' '_dep'
 'deplist' '_deplist'
 'designate' '_openstack'
@@ -2116,8 +2115,8 @@ autoload -Uz _2fa _ajv _anka _api-linter _aria2c \
             _vet _viewcore _vint _vmrun _vmware-vdiskmanager \
             _vmware-vmx _vp _wasm-dump _wasm-run _xcode-select \
             _xcodebuild _xcrun _xo _yamlfmt _yasm \
-            _zek _zinit _zoekt-git-index _alacritty _batcat \
-            _broot _busctl _bwrap _curl _docker \
+            _zek _zinit _zoekt-git-index _batcat _broot \
+            _busctl _bwrap _curl _delta _docker \
             _dpkg-parsechangelog _eza _fd _hostnamectl _journalctl \
             _kernel-install _localectl _loginctl _networkctl _oomctl \
             _powerprofilesctl _resolvectl _rg _run0 _sd_bus_address \

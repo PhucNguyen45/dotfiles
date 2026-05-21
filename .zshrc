@@ -84,11 +84,12 @@ autoload -Uz compinit
 compinit -d ~/.zsh/compdump
 
 # ----- 7. Aliases di chuyển nhanh -----
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias ~='cd ~'
-alias //='cd /'
+# Alias lùi thư mục tự động clear và liệt kê
+alias ..='cd .. && clear && la'
+alias ...='cd ../.. && clear && la'
+alias ....='cd ../../.. && clear && la'
+alias ~='cd ~ && clear && la'
+alias //='cd / && clear && la'
 
 # ----- 8. Modern CLI Tools -----
 alias ls='eza --icons=always --group-directories-first'
@@ -102,6 +103,32 @@ alias y='yazi'
 
 eval "$(zoxide init zsh)"
 export TEALDEER_CACHE_DIR="$HOME/.cache/tealdeer"
+# Override z (zoxide) để thêm clear + list sau khi nhảy thư mục thành công
+# Giữ nguyên khả năng tương tác fzf khi gõ `z` không tham số
+if typeset -f __zoxide_z >/dev/null 2>&1; then
+    z() {
+        if [ $# -eq 0 ]; then
+            __zoxide_z
+        else
+            __zoxide_z "$@"
+            local ret=$?
+            if [ $ret -eq 0 ]; then
+                clear
+                la
+            fi
+            return $ret
+        fi
+    }
+fi
+
+# (Giữ lại function c nếu bạn muốn cd đường dẫn tuyệt đối + clear + list)
+c() {
+    if [ $# -eq 0 ]; then
+        cd ~ && clear && la
+    else
+        cd "$@" && clear && la
+    fi
+}
 
 # ----- 9. fzf -----
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --preview "
@@ -126,3 +153,8 @@ fi
 
 # ----- 12. Broot -----
 source /home/razer_admin/.config/broot/launcher/bash/br
+
+. "$HOME/.local/bin/env"
+
+# Hermes Agent — ensure ~/.local/bin is on PATH
+export PATH="$HOME/.local/bin:$PATH"
