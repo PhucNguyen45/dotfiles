@@ -1,0 +1,10 @@
+#!/bin/bash
+# port - List processes using a port
+# Usage: port [port_number]
+
+if [ -z "$1" ]; then
+	# Show all listening ports
+	sudo lsof -i -P -n | grep LISTEN
+else
+	sudo lsof -i :$1
+fi

@@ -1,0 +1,24 @@
+# Don't track symlinks created by install script
+*.symlink
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+
+# Backup
+*.bak
+*.orig
+
+# Backup files
+backups/

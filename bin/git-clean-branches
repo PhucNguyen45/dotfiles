@@ -1,0 +1,13 @@
+#!/bin/bash
+# git-clean-branches - Delete local branches that have been merged/are behind
+
+# Switch to main/master first
+git checkout main 2>/dev/null || git checkout master 2>/dev/null
+
+# Prune remote tracking branches
+git fetch -p
+
+# Delete local branches that have been merged into current branch
+git branch --merged | grep -v "\*\|main\|master\|develop" | xargs -r git branch -d
+
+echo "Cleaned up merged branches."

@@ -1,0 +1,68 @@
+[user]
+	name = PhucNguyen45
+	email = 101778920+PhucNguyen45@users.noreply.github.com
+# Git Configuration Extras
+# This file adds useful aliases and settings beyond basic user info
+
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+	lg = log --oneline --graph --decorate --all
+	lgg = log --oneline --graph --decorate --all --abbrev-commit
+	undo = reset HEAD~1 --mixed
+	last = log -1 HEAD
+	unstage = reset HEAD --
+	discard = checkout --
+	df = diff
+	dfc = diff --cached
+	pf = push --force-with-lease
+	pl = pull --rebase
+	amend = commit --amend --no-edit
+	who = shortlog -s --
+	contributors = shortlog -sn --all --no-merges
+	tags = tag -l --sort=-v:refname
+
+[core]
+	excludesfile = ~/.gitignore_global
+	autocrlf = input
+	editor = nano
+
+[push]
+	default = current
+	followTags = true
+
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
+[rebase]
+	autoStash = true
+
+[merge]
+	conflictstyle = diff3
+
+[init]
+	defaultBranch = main
+
+[color]
+	ui = auto
+	
+[color "branch"]
+	current = yellow reverse
+	local = green
+	remote = red
+
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+
+[color "status"]
+	added = green
+	changed = yellow
+	untracked = red

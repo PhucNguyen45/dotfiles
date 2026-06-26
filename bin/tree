@@ -1,0 +1,13 @@
+#!/bin/bash
+# tree - Better directory tree using eza or find
+# Usage: tree [directory]
+
+TARGET="${1:-.}"
+
+if command -v eza &> /dev/null; then
+	# Use eza if available (already aliased in .zshrc, but this works in any shell)
+	eza --tree --all --icons=never --color=always "$TARGET"
+else
+	# Fallback to find-based tree
+	find "$TARGET" -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+fi

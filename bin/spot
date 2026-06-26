@@ -1,0 +1,30 @@
+#!/bin/bash
+# spot - Search for files with fzf-like preview
+# Usage: spot [pattern]
+
+if command -v fdfind &> /dev/null; then
+	FIND_CMD="fdfind"
+elif command -v fd &> /dev/null; then
+	FIND_CMD="fd"
+else
+	FIND_CMD="find"
+fi
+
+# Detect available pager
+if command -v batcat &> /dev/null; then
+	PAGER="batcat"
+elif command -v bat &> /dev/null; then
+	PAGER="bat"
+else
+	PAGER="cat"
+fi
+
+if [ -t 1 ] && command -v fzf &> /dev/null; then
+	$FIND_CMD --type f "$@" | fzf --preview "
+		if file --mime {} | grep -q text; then
+			$PAGER --style=numbers --color=always {} 2>/dev/null || cat {}
+		fi
+	" --preview-window=right:60%
+else
+	$FIND_CMD --type f "$@"
+fi
