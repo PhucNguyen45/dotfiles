@@ -24,19 +24,20 @@ declare -a MAPPINGS=(
 	"zsh/.zshrc:.zshrc"
 	"zsh/.zprofile:.zprofile"
 	"bash/.bashrc:.bashrc"
+	"bash/.profile:.profile"
 	"git/.gitconfig:.gitconfig"
 	"git/.gitignore_global:.gitignore_global"
-	"bash/.profile:.profile"
 	"tmux/.tmux.conf:.tmux.conf"
 	"vim/.vimrc:.vimrc"
+	"starship/starship.toml:.config/starship.toml"
 )
 
-# Colors for output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
 success() { echo -e "${GREEN}[OK]${NC} $1"; }
@@ -45,7 +46,6 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 install_symlinks() {
 	info "Creating symlinks from $DOTFILES_DIR to $HOME..."
-	info ""
 
 	for mapping in "${MAPPINGS[@]}"; do
 		local source_path="${mapping%%:*}"
@@ -58,6 +58,9 @@ install_symlinks() {
 			continue
 		fi
 
+		# Ensure target directory exists
+		mkdir -p "$(dirname "$target_full")"
+
 		if [ -L "$target_full" ]; then
 			local link_target="$(readlink "$target_full")"
 			if [ "$link_target" = "$source_full" ]; then
@@ -68,10 +71,9 @@ install_symlinks() {
 				rm "$target_full"
 			fi
 		elif [ -f "$target_full" ] || [ -d "$target_full" ]; then
-			# Backup existing file
 			mkdir -p "$BACKUP_DIR/$(dirname "$target_name")"
 			cp "$target_full" "$BACKUP_DIR/$target_name"
-			info "Backed up existing: $target_name -> $BACKUP_DIR/$target_name"
+			info "Backed up: $target_name"
 			rm -rf "$target_full"
 		fi
 
@@ -79,11 +81,7 @@ install_symlinks() {
 		success "Linked: $source_path -> ~/$target_name"
 	done
 
-	info ""
-	info "Symlink creation complete!"
-	info ""
 	info "Backups saved to: $BACKUP_DIR"
-	info ""
 }
 
 remove_symlinks() {
@@ -98,13 +96,10 @@ remove_symlinks() {
 			success "Removed: ~/$target_name"
 		fi
 	done
-
-	info "All symlinks removed."
 }
 
 show_status() {
 	info "Symlink status:"
-	info ""
 
 	for mapping in "${MAPPINGS[@]}"; do
 		local source_path="${mapping%%:*}"
@@ -120,26 +115,16 @@ show_status() {
 				warn "~/$target_name -> $link_target (wrong target!)"
 			fi
 		elif [ -f "$target_full" ] || [ -d "$target_full" ]; then
-			error "~/$target_name (regular file, not linked)"
+			error "~/$target_name (regular file)"
 		else
 			error "~/$target_name (not found)"
 		fi
 	done
 }
 
-# Main
 case "${1:-install}" in
-	install)
-		install_symlinks
-		;;
-	remove)
-		remove_symlinks
-		;;
-	status)
-		show_status
-		;;
-	*)
-		echo "Usage: $0 [install|remove|status]"
-		exit 1
-		;;
+	install) install_symlinks ;;
+	remove)  remove_symlinks ;;
+	status)  show_status ;;
+	*)       echo "Usage: $0 [install|remove|status]"; exit 1 ;;
 esac
